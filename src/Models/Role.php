@@ -27,9 +27,12 @@ class Role extends Model
     /**
      * The shinobi cache tag used by the model.
      *
-     * @var string
+     * @return string
      */
-    protected static $shinobi_tag = 'shinobi.roles';
+    protected static function getShinobiTag()
+    {
+        return 'shinobi.roles';
+    }
 
     /**
      * Roles can belong to many users.
@@ -42,11 +45,11 @@ class Role extends Model
     }
 
     /**
-     * Get permission slugs assigned to role.
+     * Get fresh permission slugs assigned to role from database.
      *
      * @return array
      */
-    protected function allPermissions()
+    protected function getFreshPermissions()
     {
         return $this->permissions->pluck('slug')->all();
     }
@@ -58,7 +61,10 @@ class Role extends Model
      */
     public function flushPermissionCache()
     {
-        parent::flushPermissionCache([static::$shinobi_tag, \Caffeinated\Shinobi\Traits\ShinobiTrait::$shinobi_tag]);
+        parent::flushPermissionCache([
+          static::getShinobiTag(),
+          \Caffeinated\Shinobi\Traits\ShinobiTrait::getShinobiTag()
+        ]);
     }
 
     /**

@@ -5,6 +5,17 @@ namespace Caffeinated\Shinobi\Traits;
 trait PermissionTrait
 {
     /**
+     * The shinobi cache tag used by the model.
+     * Should be implemented by Model using this trait
+     *
+     * @return string
+     */
+    protected static function getShinobiTag()
+    {
+        return '';
+    }
+
+    /**
      * Users and Roles can have many permissions
      *
      * @return Illuminate\Database\Eloquent\Model
@@ -15,12 +26,12 @@ trait PermissionTrait
     }
 
     /**
-     * Get (cached) permission slugs assigned to the user or role.
-     * Internal method, should be implemented by Model implementing this trait
+     * Get fresh permission slugs assigned to the user or role.
+     * Internal method, should be implemented by Model using this trait
      *
      * @return array
      */
-    protected function allPermissions()
+    protected function getFreshPermissions()
     {
     }
 
@@ -32,15 +43,15 @@ trait PermissionTrait
     public function getPermissions()
     {
         $primaryKey = $this[$this->primaryKey];
-        $cacheKey   = 'caffeinated.'.substr(static::$shinobi_tag, 0, -1).'.permissions.'.$primaryKey;
+        $cacheKey   = 'caffeinated.'.substr(static::getShinobiTag(), 0, -1).'.permissions.'.$primaryKey;
 
         if (method_exists(app()->make('cache')->getStore(), 'tags')) {
-            return app()->make('cache')->tags(static::$shinobi_tag)->remember($cacheKey, 60, function () {
-                return $this->allPermissions();
+            return app()->make('cache')->tags(static::getShinobiTag())->remember($cacheKey, 60, function () {
+                return $this->getFreshPermissions();
             });
         }
 
-        return $this->allPermissions();
+        return $this->getFreshPermissions();
     }
 
     /**
@@ -112,7 +123,7 @@ trait PermissionTrait
     {
         if (method_exists(app()->make('cache')->getStore(), 'tags')) {
             if ($tags === null) {
-                $tags = [ static::$shinobi_tag ];
+                $tags = [ static::getShinobiTag() ];
             }
 
             foreach ($tags as $tag) {

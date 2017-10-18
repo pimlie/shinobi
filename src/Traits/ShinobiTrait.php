@@ -9,9 +9,12 @@ trait ShinobiTrait
     /**
      * The shinobi cache tag used by the user model.
      *
-     * @var string
+     * @return string
      */
-    protected static $shinobi_tag = 'shinobi.users';
+    protected static function getShinobiTag()
+    {
+        return 'shinobi.users';
+    }
 
     /*
     |----------------------------------------------------------------------
@@ -148,11 +151,11 @@ trait ShinobiTrait
     }
 
     /**
-     * Get all user role permissions.
+     * Get all user role permissions fresh from database
      *
      * @return array|null
      */
-    protected function allPermissions()
+    protected function getFreshPermissions()
     {
         $permissions = [[], $this->getUserPermissions()];
 
@@ -231,14 +234,14 @@ trait ShinobiTrait
     {
         // Handle isRoleslug() methods
         if (starts_with($method, 'is') and $method !== 'is') {
-            $role = substr($method, 2);
+            $role = kebab_case(substr($method, 2));
 
             return $this->isRole($role);
         }
 
         // Handle canDoSomething() methods
         if (starts_with($method, 'can') and $method !== 'can') {
-            $permission = substr($method, 3);
+            $permission = kebab_case(substr($method, 3));
 
             return $this->can($permission);
         }
